@@ -1,0 +1,39 @@
+{
+  "name": "jubayer-tahsin-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal portfolio for Jubayer Tahsin. Next.js App Router, TypeScript, Tailwind v4, GSAP ScrollTrigger, Lenis.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node tools/test_lib.mjs",
+    "og": "python3 tools/make_og.py",
+    "check": "node tools/test_lib.mjs && node tools/check_source.mjs && node tools/check_contrast.mjs",
+    "verify": "npm run check && npm run typecheck && npm run lint && npm run build"
+  },
+  "dependencies": {
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "gsap": "^3.13.0",
+    "lenis": "^1.2.3",
+    "framer-motion": "^12.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.3.0",
+    "@eslint/eslintrc": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}

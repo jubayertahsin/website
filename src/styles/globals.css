@@ -1,0 +1,2860 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+ * globals.css — the design floor.
+ *
+ * Tailwind v4 keeps its theme in CSS, so this file is the whole design system:
+ * there is no tailwind.config.js and that is deliberate, not an omission.
+ *
+ * The rules this file enforces, and the reasoning, because they are what keeps
+ * the page from looking like every other AI portfolio:
+ *
+ * ONE ACCENT, USED ONCE PER SCREEN. #F42A41 is the red of the Bangladesh flag.
+ * It says where Jubayer is from without a flag icon anywhere on the page. There
+ * is no second accent, no purple, no teal. Where three states need to be
+ * distinguished, they are distinguished by FORM (filled, ring, dashed ring),
+ * never by inventing two more colours.
+ *
+ * TWO TEXT TONES, BOTH LEGIBLE. --ink and --ink-soft, and both clear WCAG AA on
+ * the ground. There is no third, dimmer tone, because a third tone is always
+ * the one that fails contrast. Hierarchy below --ink-soft is carried by size,
+ * case and letter-spacing instead.
+ *
+ * HAIRLINES, NOT CARDS. --line is a 1px rule at 12% ink. Nothing on this page is
+ * a rounded box with a shadow. Radius is 0 everywhere except status pips.
+ *
+ * MOTION IS A FUNCTION OF SCROLL, NOT OF TIME. Sections expose --p (0 to 1) and
+ * the CSS below reads it. That is why scrolling back up lands on exactly the
+ * state you left, rather than approximately.
+ * ========================================================================= */
+
+@theme {
+  /* ---- ground and ink ---------------------------------------------------- */
+  /* One ground, not a ladder of them. Two lifted greys were declared here for a
+   * long time and never used once: the page separates its sections with space and
+   * hairlines instead of with panels, and a token nothing reads is a token that
+   * will eventually be read for the wrong reason. */
+  --color-ground: #0a0a0a;
+  --color-ink: #f5f5f0;
+  --color-ink-soft: #94908a;
+  --color-accent: #f42a41;
+  /* Label sitting ON the accent fill. Near-black, because off-white on this red
+   * measures 3.6:1 and fails. Dark-on-red measures 4.93:1 and also looks
+   * better. */
+  --color-accent-ink: #0a0a0a;
+  --color-line: rgb(245 245 240 / 0.12);
+  --color-line-strong: rgb(245 245 240 / 0.22);
+
+  /* ---- type ------------------------------------------------------------- */
+  /* Three faces, each with a job. The serif carries the editorial voice and the
+   * name. The grotesk carries every interface element. The mono is not
+   * decoration: the decryption swaps glyphs in place, and in a proportional face
+   * the line would reflow on every frame. It is a system stack, so it costs
+   * zero bytes. */
+  --font-display: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  --font-text: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+
+  --text-display: clamp(3.25rem, 13vw, 12rem);
+  --text-display--line-height: 0.86;
+  --text-title: clamp(2rem, 5.5vw, 4.75rem);
+  --text-title--line-height: 0.98;
+  --text-head: clamp(1.5rem, 3vw, 2.5rem);
+  --text-head--line-height: 1.08;
+  --text-sub: clamp(1.125rem, 1.9vw, 1.5rem);
+  --text-sub--line-height: 1.28;
+  --text-lead: clamp(1.0625rem, 1.35vw, 1.3125rem);
+  --text-lead--line-height: 1.58;
+  --text-body: clamp(0.9375rem, 1vw, 1.0625rem);
+  --text-body--line-height: 1.68;
+  --text-label: clamp(0.625rem, 0.72vw, 0.75rem);
+  --text-label--line-height: 1.2;
+
+  /* ---- rhythm ----------------------------------------------------------- */
+  /* A scale, not arbitrary numbers. Every gap on the page is one of these. */
+  --spacing-gut: clamp(1.25rem, 5vw, 5rem);
+  --spacing-s1: 0.25rem;
+  --spacing-s2: 0.5rem;
+  --spacing-s3: 0.875rem;
+  --spacing-s4: 1.5rem;
+  --spacing-s5: 2.5rem;
+  --spacing-s6: 4rem;
+  --spacing-s7: 6.5rem;
+  --spacing-s8: 10rem;
+
+  --ease-out-quart: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ===========================================================================
+ * Root variables the theme cannot express.
+ * ========================================================================= */
+:root {
+  color-scheme: dark;
+
+  /* Written by the scroll engine. Declared here so that with JavaScript off, or
+   * before hydration, every section computes to its FINISHED state instead of
+   * to opacity 0. A page that needs a script to become visible is a page that
+   * is blank in a crawler and blank when the script fails. */
+  --p: 1;
+  --e: 1;
+  --u: 0;
+
+  /* Grain. An inline SVG so there is no image request, and small enough that
+   * the browser tiles it cheaply. */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+/* ===========================================================================
+ * Base.
+ * ========================================================================= */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Lenis drives scrolling; native smooth behaviour would fight it. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* The single most common failure on a page with pinned horizontal travel. */
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  ul,
+  ol,
+  dl,
+  dd {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  /* One focus ring for the whole site, and it is a PAIR of colours so that one
+   * half of it always survives whatever it lands on. Measured at 13:1 on the
+   * ground and 4.9:1 on the accent fill. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px var(--color-ground);
+  }
+
+  /* Never remove a focus ring; only replace it. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* ===========================================================================
+ * Lenis. These four rules are required by the library, not stylistic.
+ * ========================================================================= */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* ===========================================================================
+ * Primitives the utility layer cannot express, because they read --p.
+ * ========================================================================= */
+@layer components {
+  /* ---- section labels -------------------------------------------------- */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  /* ---- section heads --------------------------------------------------- */
+  /* One rhythm for the sections that are conventionally structured, and an
+   * `align` valve so two of them in a row do not read as the same slab twice.
+   * The hero, the interlude and the close do not use any of this. */
+  .head {
+    display: grid;
+    gap: var(--spacing-s4);
+    max-width: 68rem;
+  }
+  /* Right-hand column, but the text stays ragged-right: centring or right-
+   * aligning a paragraph costs real reading speed, and the composition change
+   * comes from where the block sits, not from where its lines end. */
+  .head[data-align="trail"] {
+    margin-left: auto;
+  }
+  .head[data-align="centre"] {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .head-label {
+    margin: 0;
+  }
+
+  .head-title {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
+    letter-spacing: -0.015em;
+  }
+
+  .head-title-sm {
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .head-lede {
+    /* Measure, not width. Past about 50 characters the eye loses the line it is
+     * returning to, whatever the viewport can accommodate. */
+    max-width: 48ch;
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--color-ink-soft);
+  }
+  .head[data-align="centre"] .head-lede {
+    margin-inline: auto;
+  }
+
+  /* ---- status ---------------------------------------------------------- */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-s2);
+  }
+
+  /* The word itself. It carries .label as well, so this only has to do the one
+   * thing .label does not: hold the status text on the same optical baseline as
+   * the pip beside it. Without the shift the round mark sits visibly low against
+   * uppercase mono, because the pip is centred on the line box and the capitals
+   * are not. */
+  .status-text {
+    position: relative;
+    top: 0.03em;
+    color: var(--color-ink-soft);
+  }
+
+  /* ---- scenes ---------------------------------------------------------- */
+  /* A Scene is only a positioning context and a carrier for --p / --e. It has no
+   * look of its own, deliberately: the moment a wrapper component starts adding
+   * padding or a background, every section inherits the same shape and the page
+   * becomes a stack of identical slabs. */
+  .scene {
+    position: relative;
+  }
+
+  /* ---- the signature core ---------------------------------------------- */
+  /* Fixed, full-viewport, behind everything, and inert. The z-index ladder for
+   * the whole site, in one place so it is arguable rather than accidental:
+   *   0   core canvas
+   *   1   page content
+   *   90  grain
+   *   100 navigation
+   *   120 scroll progress
+   *   150 custom cursor
+   *   200 skip link
+   *   300 loader
+   */
+  .core {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Content sits above the canvas without needing a background of its own, which
+   * is what lets one continuous ground run the length of the page. */
+  .page {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---- reveal: opacity, lift and blur as a function of --e -------------- */
+  /* --e is the eased copy of --p. One declaration, and every reveal on the page
+   * shares it, which is what keeps the motion feeling like one hand.
+   *
+   * The defaults below are load-bearing. Custom properties inherit, so a child
+   * Reveal inside a STAGGERED parent Reveal would otherwise pick up the parent's
+   * --i and start life pre-delayed for no reason. Declaring them here resets
+   * every reveal to "no stagger", and Reveal's inline style beats a class rule,
+   * so a genuinely staggered item still gets its own index.
+   *
+   * The 1.6 multiplier means a reveal finishes at about 62% of its scene rather
+   * than exactly at the end. Copy that is still arriving as it leaves the screen
+   * never gets read.
+   *
+   * No `will-change` here on purpose. There are dozens of reveals on this page,
+   * and promoting every one of them to its own compositor layer for the whole
+   * session costs more memory than it saves frames. It is spent where it is
+   * actually needed: the rail track and the pinned canvas. */
+  .reveal {
+    --i: 0;
+    --n: 1;
+    --stagger: 0;
+    --t: clamp(
+      0,
+      calc((var(--e) * (1 + var(--stagger)) - (var(--i) / max(var(--n), 1)) * var(--stagger)) * 1.6),
+      1
+    );
+    opacity: var(--t);
+    transform: translate3d(0, calc((1 - var(--t)) * 2.25rem), 0);
+    filter: blur(calc((1 - var(--t)) * 6px));
+  }
+
+  /* ---- parallax -------------------------------------------------------- */
+  /* Positive --par drifts UPWARD across the scene, which reads as nearer the
+   * camera. Centred on 0.5 so the element is in its authored position at the
+   * middle of the scene, not at the start: that way the layout a designer sees
+   * at rest is the layout that exists when the section is actually being looked
+   * at.
+   *
+   * Parallax and Reveal both write transform, so they are separate elements by
+   * design. Nest them; never put both classes on one node. */
+  .par {
+    --par: 80;
+    transform: translate3d(0, calc((0.5 - var(--p)) * var(--par) * 1px), 0);
+  }
+
+  /* ---- split text ------------------------------------------------------ */
+  /* SplitText writes --i (this cell's index) and --n (total). The stagger is
+   * arithmetic in CSS, so a 40-character headline is ONE style write per frame
+   * instead of forty. */
+  [data-split] {
+    --stagger: 0.55;
+  }
+
+  [data-split] .w {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  [data-split] .c,
+  [data-split] .ln {
+    display: inline-block;
+    /* Each cell's own progress: the shared --e, delayed by its index. */
+    --t: clamp(
+      0,
+      calc((var(--e) * (1 + var(--stagger)) - (var(--i) / max(var(--n), 1)) * var(--stagger)) * 1.6),
+      1
+    );
+  }
+
+  [data-split] .c {
+    opacity: var(--t);
+    transform: translate3d(0, calc((1 - var(--t)) * 0.42em), 0);
+  }
+
+  [data-split="lines"] .ln {
+    display: block;
+    opacity: var(--t);
+    /* A wipe rather than a fade: state change, not arrival. */
+    clip-path: inset(0 calc((1 - var(--t)) * 100%) 0 0);
+  }
+
+  /* ---- the cipher ------------------------------------------------------ */
+  .cipher {
+    font-family: var(--font-mono);
+    /* Tabular by construction: a swapped glyph must not move its neighbours. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Authored lines. The line breaks in a decrypted statement are a writing
+   * decision, not a wrapping accident, so each one is its own block. */
+  .cipher .cl {
+    display: block;
+  }
+
+  /* A word is a nowrap island. Every character is an inline-block, and an
+   * inline-block is a line-break opportunity, so without this the browser will
+   * cheerfully break "INNOVATE" across two lines and it will look like a bug. */
+  .cipher .cw {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  /* Gaps are real, preserved whitespace AND the only break opportunity in the
+   * line: `pre-wrap`, never `pre`. `pre` would preserve the space and then
+   * refuse to wrap at it, which on a phone means a statement running off the
+   * side of the screen. */
+  .cipher .cg {
+    white-space: pre-wrap;
+  }
+
+  .cipher .ch {
+    display: inline-block;
+    /* Unresolved characters sit dimmer and slightly tighter, so the line reads
+     * as noise resolving into language rather than as text changing colour. */
+    color: var(--color-ink-soft);
+    opacity: 0.62;
+    transition: color 90ms linear, opacity 90ms linear;
+  }
+
+  .cipher .ch[data-on="1"] {
+    color: var(--color-ink);
+    opacity: 1;
+  }
+
+  /* The pointer is the second key: characters nearest it resolve early, and
+   * this is the only visual acknowledgement of that. */
+  .cipher .ch[data-hit="1"] {
+    color: var(--color-accent);
+  }
+
+  /* The instrument strip: round, key, entropy. It appears ONCE on the page. It
+   * is there because the effect is real arithmetic rather than a random shuffle,
+   * and showing the entropy fall to zero is the proof. Twice would make it a
+   * motif and it would start to feel like a hacker-movie prop. */
+  .cipher-readout {
+    display: block;
+    margin-top: var(--spacing-s4);
+    white-space: pre-wrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.16em;
+  }
+
+  /* ---- buttons --------------------------------------------------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-s3);
+    padding: 0.9rem 1.4rem;
+    font-size: var(--text-body);
+    letter-spacing: 0.01em;
+    border: 1px solid var(--color-line-strong);
+    background: transparent;
+    transition:
+      border-color 260ms var(--ease-out-quart),
+      background-color 260ms var(--ease-out-quart),
+      color 260ms var(--ease-out-quart);
+  }
+
+  .btn .arrow {
+    display: inline-block;
+    transition: transform 320ms var(--ease-out-quart);
+  }
+
+  .btn:hover .arrow,
+  .btn:focus-visible .arrow {
+    transform: translateX(0.3rem);
+  }
+
+  .btn:hover {
+    border-color: var(--color-ink);
+  }
+
+  .btn-fill {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    border-color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .btn-fill:hover {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-ground);
+  }
+
+  /* ---- link underline that draws rather than appears -------------------- */
+  .ul {
+    position: relative;
+    display: inline-block;
+  }
+
+  .ul::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.15em;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 380ms var(--ease-out-quart);
+  }
+
+  .ul:hover::after,
+  .ul:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* ---- status pips: FORM, not colour ----------------------------------- */
+  .pip {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-accent);
+  }
+  .pip[data-tone="live"] {
+    background: var(--color-accent);
+  }
+  .pip[data-tone="active"] {
+    background: transparent;
+  }
+  .pip[data-tone="experimental"] {
+    background: transparent;
+    border-style: dashed;
+  }
+
+  /* ---- the lateral rail ------------------------------------------------- */
+  /* Two layouts from one markup tree, switched by a single data attribute. The
+   * vertical one is what the server sends and what a phone, a crawler and a
+   * reduced-motion reader get; the horizontal one is added on top for wide
+   * viewports. Vertical is the DEFAULT, not the fallback, which is why there is
+   * no @media query here reversing anything. */
+  .rail {
+    position: relative;
+  }
+
+  .rail-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--spacing-s4);
+    padding-block: var(--spacing-s5) var(--spacing-s4);
+  }
+
+  .rail-count {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.18em;
+  }
+
+  .rail-count-sep {
+    opacity: 0.5;
+  }
+
+  /* ---- vertical (default) ---------------------------------------------- */
+  .rail[data-mode="v"] .rail-track {
+    display: grid;
+    gap: var(--spacing-s7);
+  }
+
+  /* ---- horizontal (wide viewports, motion welcome) --------------------- */
+  .rail[data-mode="h"] {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* The track is translated past the viewport edge on both sides. Clipping
+     * here rather than on the body keeps the rest of the page able to have
+     * sticky children. */
+    overflow: clip;
+  }
+
+  .rail[data-mode="h"] .rail-track {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1;
+    width: max-content;
+    /* Spent deliberately: this is the one element on the page that is
+     * transform-animated every frame for minutes at a time. */
+    will-change: transform;
+  }
+
+  .rail[data-mode="h"] .rail-track > [data-panel] {
+    flex: 0 0 auto;
+  }
+  /* ---- grain and vignette ---------------------------------------------- */
+  /* Both are fixed, inert, and above the content. The grain sits over the type
+   * on purpose: grain under the text is grain you cannot see, and its whole job
+   * is to stop a large flat dark field banding on a cheap panel. At this opacity
+   * the effective coverage is about one and a half percent. */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    background-image: var(--noise);
+    background-size: 140px 140px;
+    opacity: 0.035;
+  }
+
+  /* A dark overlay over text normally means a contrast problem. This one does
+   * not, because it darkens the ink and the ground TOGETHER: at the strongest
+   * corner, off-white on ground still measures better than 11:1. */
+  .vig {
+    position: fixed;
+    inset: 0;
+    z-index: 89;
+    pointer-events: none;
+    background: radial-gradient(125% 95% at 50% 45%, transparent 52%, rgb(10 10 10 / 0.42) 100%);
+  }
+
+  /* ---- scroll progress ------------------------------------------------- */
+  .prog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    z-index: 120;
+    pointer-events: none;
+    background: var(--color-line);
+  }
+
+  .prog-bar {
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
+
+  /* ---- custom cursor --------------------------------------------------- */
+  /* Each of these is a ZERO-SIZED point that JavaScript translates to the pointer
+   * position, with the visible parts centred inside it by grid. That is what lets
+   * the ring change size without the position write having to know how big it
+   * currently is: one transform for where it is, another for how big it is, and
+   * the two never have to be composed by hand. */
+  .cur-dot,
+  .cur-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .cur-dot > *,
+  .cur-ring > * {
+    grid-area: 1 / 1;
+  }
+  .cur-ring {
+    z-index: 150;
+    --sc: 1;
+    --press: 1;
+    --vis: 1;
+  }
+  .cur-dot {
+    z-index: 151;
+    --press: 1;
+    --vis: 1;
+  }
+
+  /* Difference blending means the dot is legible on the ground, on the accent
+   * fill, and on a light panel, without any code deciding which. */
+  .cur-dot-in {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    mix-blend-mode: difference;
+    transform: scale(calc(var(--press) * var(--vis)));
+    transition: transform 220ms var(--ease-out-quart);
+  }
+  .cur-dot[data-down="1"] {
+    --press: 2.1;
+  }
+  .cur-dot[data-out="1"] {
+    --vis: 0;
+  }
+
+  .cur-ring-in {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    /* scale(), never width/height: one is a compositor operation and the other is
+     * a layout pass sixty times a second. */
+    transform: scale(calc(var(--sc) * var(--press) * var(--vis)));
+    transition:
+      transform 420ms var(--ease-out-quart),
+      background-color 300ms var(--ease-out-quart),
+      border-color 300ms var(--ease-out-quart);
+  }
+  .cur-ring[data-state="hover"] {
+    --sc: 1.6;
+  }
+  .cur-ring[data-state="label"] {
+    --sc: 2.7;
+  }
+  /* Multiplied rather than overridden, so pressing a labelled target still reads
+   * as a press instead of collapsing the label. */
+  .cur-ring[data-down="1"] {
+    --press: 0.86;
+  }
+  .cur-ring[data-out="1"] {
+    --vis: 0;
+  }
+
+  .cur-ring[data-state="label"] .cur-ring-in {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* The word is a sibling of the ring, not a child, so it does not inherit the
+   * scale and never needs counter-scaling to stay the right size. */
+  .cur-label {
+    color: var(--color-accent-ink);
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out-quart);
+  }
+  .cur-ring[data-state="label"] .cur-label {
+    opacity: 1;
+  }
+
+  /* The native cursor is hidden ONLY while the attribute is present, and the
+   * attribute is written from inside the cursor's own effect. Text inputs keep
+   * their caret regardless: replacing an I-beam with a dot is a downgrade. */
+  [data-cursor-on="1"],
+  [data-cursor-on="1"] a,
+  [data-cursor-on="1"] button,
+  [data-cursor-on="1"] [role="button"] {
+    cursor: none;
+  }
+  [data-cursor-on="1"] input,
+  [data-cursor-on="1"] textarea,
+  [data-cursor-on="1"] select {
+    cursor: auto;
+  }
+
+  /* ---- magnetic controls ----------------------------------------------- */
+  /* The padding extends the sensitive area past the visible border so the pull
+   * starts just before the cursor arrives; the matching negative margin means
+   * that extra area costs the layout nothing. */
+  .mag {
+    --mag: 9;
+    --field: 14;
+    --mx: 0;
+    --my: 0;
+    display: inline-block;
+    padding: calc(var(--field) * 1px);
+    margin: calc(var(--field) * -1px);
+    transform: translate3d(calc(var(--mx) * var(--mag) * 1px), calc(var(--my) * var(--mag) * 1px), 0);
+    transition: transform 480ms var(--ease-out-quart);
+  }
+
+  /* The label travels a little further than its frame. That difference is the
+   * entire illusion of depth, and it is why this is two elements. */
+  .mag-in {
+    display: inline-block;
+    transform: translate3d(
+      calc(var(--mx) * var(--mag) * 0.45px),
+      calc(var(--my) * var(--mag) * 0.45px),
+      0
+    );
+    transition: transform 620ms var(--ease-out-quart);
+  }
+
+  /* ---- loader ---------------------------------------------------------- */
+  .ldr {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    background: var(--color-ground);
+  }
+
+  .ldr-in {
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-s4);
+    padding-inline: var(--spacing-gut);
+  }
+
+  .ldr-mark {
+    display: flex;
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 16vw, 9rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  /* The entrance is a CSS animation rather than a scroll function, because at
+   * this point in the page's life there is no scroll to be a function of. It is
+   * the ONE time-based animation in the build, and the reduced-motion block
+   * above already neutralises it. */
+  .ldr-glyph {
+    display: inline-block;
+    animation: ldr-rise 760ms var(--ease-out-quart) both;
+    animation-delay: calc(var(--i) * 90ms);
+  }
+
+  @keyframes ldr-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 0.28em, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* Same hairline the progress rail uses, so the loader is visibly the same
+   * instrument as the page it hands over to. */
+  .ldr-rule {
+    width: min(15rem, 52vw);
+    height: 1px;
+    background: var(--color-line);
+  }
+
+  .ldr-rule-fill {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(var(--fill, 0));
+    transform-origin: 0 50%;
+    transition: transform 420ms var(--ease-out-quart);
+  }
+
+  .ldr-steps {
+    display: flex;
+    gap: var(--spacing-s4);
+  }
+
+  /* Dim until the milestone is genuinely in. No opacity below 0.4, so the row
+   * reads as a ledger of three rather than as one word and two ghosts. */
+  .ldr-step {
+    opacity: 0.4;
+    transition: opacity 300ms linear, color 300ms linear;
+  }
+  .ldr-step[data-in="1"] {
+    opacity: 1;
+    color: var(--color-ink);
+  }
+
+  /* ---- navigation ------------------------------------------------------- */
+  .nav {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 100;
+    padding: var(--spacing-s4) 0;
+    transition:
+      padding 520ms var(--ease-out-quart),
+      background-color 520ms var(--ease-out-quart),
+      border-color 520ms var(--ease-out-quart),
+      backdrop-filter 520ms var(--ease-out-quart);
+    border-bottom: 1px solid transparent;
+  }
+
+  /* Past the hero there is content underneath, and unbacked text over moving
+   * content is unreadable. So the backdrop arrives only when it is earning its
+   * keep — never at the top of the page, where it would be pure decoration. */
+  .nav[data-condensed="1"] {
+    padding: var(--spacing-s2) 0;
+    background: rgb(10 10 10 / 0.72);
+    border-bottom-color: var(--color-line);
+    backdrop-filter: blur(14px) saturate(120%);
+  }
+
+  .nav-in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-s4);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-gut);
+  }
+
+  .nav-mark {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* The full stop is the accent's smallest possible appearance, and it is the
+   * only place the accent shows before the reader scrolls. */
+  .nav-mark-dot {
+    color: var(--color-accent);
+  }
+
+  .nav-list {
+    display: none;
+    align-items: center;
+    gap: var(--spacing-s5);
+  }
+
+  .nav-link {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    transition: color 280ms var(--ease-out-quart);
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--color-ink);
+  }
+
+  /* The active marker is a rule under the word, not a pill or a background.
+   * It draws rather than appears, and it is the accent, so at any moment the
+   * accent is doing exactly one job on screen. */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.45em;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 420ms var(--ease-out-quart);
+  }
+
+  .nav-link[data-active="1"] {
+    color: var(--color-ink);
+  }
+  .nav-link[data-active="1"]::after {
+    transform: scaleX(1);
+  }
+
+  /* The label is a child element so it can move without taking the rule with it.
+   * The underline above is drawn on .nav-link itself, so lifting only the text
+   * reads as the word rising off its own rule; transforming the whole control
+   * would drag the rule along and the gesture would disappear. */
+  .nav-link-text {
+    display: inline-block;
+    transition: transform 280ms var(--ease-out-quart);
+  }
+  .nav-link:hover .nav-link-text,
+  .nav-link:focus-visible .nav-link-text {
+    transform: translate3d(0, -0.12em, 0);
+  }
+
+  /* ---- the toggle: two rules that become a cross ------------------------ */
+  .nav-toggle {
+    display: grid;
+    place-items: center;
+    /* 44px, which is the smallest tap target that does not fail WCAG 2.5.8. */
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-right: calc(var(--spacing-s2) * -1);
+  }
+
+  .nav-toggle-bars {
+    position: relative;
+    display: block;
+    width: 1.375rem;
+    height: 0.5rem;
+  }
+
+  .nav-toggle-bars > span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--color-ink);
+    transition: transform 420ms var(--ease-in-out-quart);
+  }
+  .nav-toggle-bars > span:first-child {
+    top: 0;
+  }
+  .nav-toggle-bars > span:last-child {
+    bottom: 0;
+  }
+
+  .nav-toggle-bars[data-open="1"] > span:first-child {
+    transform: translateY(0.25rem) rotate(45deg);
+  }
+  .nav-toggle-bars[data-open="1"] > span:last-child {
+    transform: translateY(-0.25rem) rotate(-45deg);
+  }
+
+  /* ---- the full-screen menu -------------------------------------------- */
+  .menu {
+    position: fixed;
+    inset: 0;
+    /* Below the nav on purpose: the toggle has to stay reachable to close it. */
+    z-index: 99;
+    display: grid;
+    align-content: center;
+    background: var(--color-ground);
+    padding: var(--spacing-s8) var(--spacing-gut) var(--spacing-s6);
+  }
+
+  /* The list is the menu's whole content, so it carries the reset rather than the
+   * container: a margin on .menu would fight the centring above. */
+  .menu-list {
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .menu-item + .menu-item {
+    margin-top: var(--spacing-s2);
+  }
+
+  /* The mask that makes the line look like it rises out of nothing. */
+  .menu-line {
+    display: block;
+    overflow: clip;
+  }
+
+  .menu-link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-s4);
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+  }
+
+  .menu-index {
+    /* Fixed width, so five numerals do not shift five words by a hair each. */
+    width: 2.5ch;
+    flex: none;
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 768px) {
+    .nav-list {
+      display: flex;
+    }
+    .nav-toggle,
+    .menu {
+      display: none;
+    }
+  }
+
+  /* ---- hero ------------------------------------------------------------- */
+  /* One screen, and the only section on the page allowed to be this quiet.
+   * min-height rather than height: a 360px-wide phone in landscape with a
+   * 320px-tall viewport must be able to grow rather than clip the name. */
+  .hero {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 100svh;
+    padding: var(--spacing-s8) var(--spacing-gut) var(--spacing-s4);
+  }
+
+  .hero-in {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: var(--spacing-s4);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s3);
+    margin: 0;
+  }
+
+  /* A short accent rule instead of a bullet or an icon. */
+  .hero-eyebrow-mark {
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    background: var(--color-accent);
+  }
+
+  .hero-name {
+    display: grid;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    letter-spacing: -0.03em;
+    /* The name is set as authored, not balanced: text-wrap: balance on a two
+     * line display heading fights the manual line break it already has. */
+    text-wrap: nowrap;
+  }
+
+  /* The two lines separate as the reader leaves. Different rates, so the hero
+   * disassembles rather than sliding away as one slab — and because it is a
+   * function of --p, scrolling back up reassembles it exactly. */
+  .hero-line {
+    display: block;
+    transform: translate3d(calc(var(--p) * var(--drift, 0) * 1px), 0, 0);
+  }
+  .hero-line[data-line="1"] {
+    --drift: -34;
+  }
+  .hero-line[data-line="2"] {
+    --drift: 46;
+    /* The indent is what stops two stacked words reading as a logo lockup. */
+    padding-left: 0.14em;
+  }
+
+  .hero-word {
+    display: block;
+  }
+
+  .hero-tagline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s3);
+    margin-top: var(--spacing-s2);
+    font-family: var(--font-display);
+    font-size: var(--text-sub);
+    line-height: 1.1;
+  }
+
+  .hero-creed {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-s3);
+  }
+
+  /* A hairline between the verbs rather than a full stop or a slash: the four
+   * words are one idea in four steps, and punctuation would make them a list. */
+  .hero-creed-sep {
+    display: block;
+    width: 1.25rem;
+    height: 1px;
+    background: var(--color-line-strong);
+  }
+
+  .hero-statement {
+    max-width: 44ch;
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s5);
+    margin-top: var(--spacing-s3);
+  }
+
+  .hero-foot {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--spacing-s4);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+    /* Sinks and fades as the hero leaves, faster than the name above it. */
+    opacity: calc(1 - var(--p) * 1.4);
+    transform: translate3d(0, calc(var(--p) * 24px), 0);
+  }
+
+  .hero-foot-item {
+    margin: 0;
+  }
+  .hero-foot-item[data-align="end"] {
+    text-align: right;
+  }
+
+  /* ---- about ------------------------------------------------------------ */
+  /* Pinned, so the padding has to hold the whole block inside one viewport at
+   * every width. Content-driven rows rather than fixed heights: a 360px phone
+   * gets the same markup and simply reads taller inside the pin. */
+  .abt {
+    display: grid;
+    align-content: center;
+    min-height: 100svh;
+    padding: var(--spacing-s7) var(--spacing-gut);
+  }
+
+  .abt-in {
+    display: grid;
+    gap: var(--spacing-s5);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  .abt-head {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  .abt-title {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
+    letter-spacing: -0.015em;
+  }
+
+  /* The decrypted statement. Larger than the prose around it and in the mono
+   * face, because it is the one line in the section that is quoted rather than
+   * explained. */
+  .abt-key {
+    font-size: var(--text-sub);
+    line-height: 1.34;
+    letter-spacing: -0.01em;
+  }
+
+  .abt-body {
+    display: grid;
+    gap: var(--spacing-s4);
+    max-width: 62ch;
+  }
+
+  .abt-para {
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--color-ink-soft);
+  }
+  /* The first paragraph is the one that answers the heading, so it is ink rather
+   * than ink-soft. Hierarchy from tone, not from a third colour. */
+  .abt-para:first-child {
+    color: var(--color-ink);
+  }
+
+  /* Four facts as hairline-separated columns. Not cards: the same information in
+   * cards takes three times the height and makes a student's status look like a
+   * pricing table. */
+  .abt-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--spacing-s4);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .abt-fact {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .abt-fact-value {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.4;
+  }
+
+  .abt-method {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  .abt-method-label {
+    margin: 0;
+  }
+
+  .abt-method-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s2) var(--spacing-s4);
+  }
+
+  /* An accent tick before each term instead of a bullet glyph or a pill. */
+  .abt-method-item {
+    position: relative;
+    padding-left: var(--spacing-s3);
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+  .abt-method-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.375rem;
+    height: 1px;
+    background: var(--color-accent);
+  }
+
+  /* ---- the creed interlude --------------------------------------------- */
+  /* The trough in the feeling curve. Four words, one screen of scroll each, and
+   * nothing else on the page is this empty on purpose. */
+  .creed {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: var(--spacing-s7) var(--spacing-gut);
+  }
+
+  /* DEFAULT: a legible row of four words. This is what a crawler, a JS-off
+   * reader and the first paint before hydration all get, and none of them lose a
+   * word. Only the live layout below is a window function. */
+  .creed-stack {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0 var(--spacing-s5);
+    text-align: center;
+  }
+
+  .creed-word {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+  }
+
+  .creed-dot {
+    color: var(--color-accent);
+  }
+
+  /* LIVE: all four words occupy the same cell, so they cross-fade in place
+   * rather than moving the layout. Grid rather than absolute positioning, so the
+   * tallest word still sizes the box and nothing overflows on a narrow screen. */
+  .creed-stack[data-live="1"] {
+    display: grid;
+    place-items: center;
+    gap: 0;
+  }
+
+  /* The window function. Each word owns 1/n of the scene and is at full strength
+   * across the middle of its slice:
+   *   d = |p*n - (i + 0.5)|   distance from this word's centre, in slices
+   *   t = 1 - clamp(d * 2.1)  full at the centre, gone by the slice edge
+   * Written in CSS and read off --p, so the animation itself costs no script and
+   * scrolling back up lands on exactly the word you left. */
+  .creed-stack[data-live="1"] .creed-word {
+    grid-area: 1 / 1;
+    --d: max(
+      calc(var(--p) * var(--n) - (var(--i) + 0.5)),
+      calc((var(--i) + 0.5) - var(--p) * var(--n))
+    );
+    --t: clamp(0, calc(1 - var(--d) * 2.1), 1);
+    font-size: var(--text-display);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    opacity: var(--t);
+    /* Rises into place and keeps rising as it leaves, so four words read as one
+     * continuous upward movement rather than four separate fades. */
+    transform: translate3d(0, calc((0.5 - var(--t) * 0.5) * -1.4rem), 0);
+  }
+
+  .creed-rule {
+    position: absolute;
+    left: var(--spacing-gut);
+    right: var(--spacing-gut);
+    bottom: var(--spacing-s6);
+    height: 1px;
+    background: var(--color-line);
+  }
+
+  .creed-rule-fill {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(var(--p));
+    transform-origin: 0 50%;
+  }
+
+  /* ---- skills ---------------------------------------------------------- */
+  .skl {
+    padding: var(--spacing-s8) var(--spacing-gut);
+  }
+
+  .skl-in {
+    display: grid;
+    gap: var(--spacing-s7);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  /* ---- the skill graph ------------------------------------------------- */
+  /* Default is a LIST. The ring is added on top at a width where it fits, which
+   * is why there is no @media query undoing anything below this line. */
+  .eco {
+    display: grid;
+    gap: var(--spacing-s5);
+  }
+
+  .eco-stage {
+    position: relative;
+  }
+
+  /* The web is only drawn in the ring layout, where the coordinates mean
+   * something. In the list layout there are no positions to connect. */
+  .eco-web {
+    display: none;
+  }
+
+  .eco-nodes {
+    display: grid;
+    gap: var(--spacing-s5);
+  }
+
+  .eco-node {
+    display: grid;
+    gap: var(--spacing-s3);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .eco-btn {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-s3);
+    text-align: left;
+  }
+
+  .eco-index {
+    flex: none;
+    color: var(--color-accent);
+  }
+
+  .eco-label {
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+  }
+
+  .eco-items {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  .eco-blurb {
+    max-width: 46ch;
+    color: var(--color-ink-soft);
+  }
+
+  .eco-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s2) var(--spacing-s3);
+  }
+
+  /* Terms are hairline-boxed, not pill-shaped, and there are no rounded corners
+   * anywhere. A tag that looks like a chip invites a click that does nothing. */
+  .eco-term {
+    padding: 0.28rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+    border: 1px solid var(--color-line);
+  }
+
+  .eco-used {
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  .eco-unnamed {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+
+  .eco-detail {
+    display: none;
+  }
+
+  /* ---- the ring, wide viewports only ----------------------------------- */
+  @media (min-width: 1024px) {
+    .eco {
+      grid-template-columns: 1fr 22rem;
+      gap: var(--spacing-s6);
+      align-items: start;
+    }
+
+    .eco-stage {
+      /* Aspect ratio rather than a fixed height, so the ring stays a ring at
+       * every width and the SVG's stretched viewBox matches the node grid. */
+      aspect-ratio: 16 / 10;
+      /* Room for a node's own body. The coordinates run 8% to 92%, and those are
+       * the CENTRES of boxes about 13rem wide, so the outermost node hung roughly
+       * half its width past the stage and landed on the detail panel. Padding
+       * rather than insetting the two layers by hand: an absolutely positioned
+       * child resolves `inset: 0` against the padding box, so the web and the node
+       * grid shrink by the same amount and stay in the same coordinate space.
+       *
+       * Capped as a percentage as well, because the inset is a constant number of
+       * rem while the column is fluid: on a 1024px viewport the constant alone
+       * would leave the ring narrower than the boxes standing in it. */
+      padding-inline: min(6.5rem, 11%);
+    }
+
+    .eco-web {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .eco-edge {
+      stroke: var(--color-line);
+      stroke-width: calc(var(--w) * 0.12);
+      /* Non-scaling so a stretched viewBox does not give horizontal and vertical
+       * lines visibly different weights. */
+      vector-effect: non-scaling-stroke;
+      transition: stroke 260ms var(--ease-out-quart), opacity 260ms var(--ease-out-quart);
+    }
+
+    /* Dim the whole web when something is active, then light only what touches
+     * it. The accent appears on at most one node's edges at a time. */
+    .eco[data-active="1"] .eco-edge {
+      opacity: 0.28;
+    }
+    .eco[data-active="1"] .eco-edge[data-on="1"] {
+      opacity: 1;
+      stroke: var(--color-accent);
+    }
+
+    .eco-nodes {
+      display: block;
+      position: absolute;
+      inset: 0;
+    }
+
+    .eco-node {
+      position: absolute;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--y) * 1%);
+      /* Zero-sized point plus a centred child, so the position transform and any
+       * size change never have to be composed by hand. */
+      width: 0;
+      height: 0;
+      display: grid;
+      place-items: center;
+      gap: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .eco-node > * {
+      grid-area: 1 / 1;
+    }
+
+    .eco-btn {
+      display: grid;
+      justify-items: center;
+      gap: var(--spacing-s1);
+      width: max-content;
+      max-width: 11rem;
+      padding: var(--spacing-s3);
+      text-align: center;
+      background: var(--color-ground);
+      border: 1px solid var(--color-line);
+      transition:
+        border-color 260ms var(--ease-out-quart),
+        color 260ms var(--ease-out-quart),
+        transform 420ms var(--ease-out-quart);
+    }
+
+    /* Degree drives scale, between 1 and 1.14. Derived from the edge count, so
+     * it is a statement about connectedness and never about proficiency. */
+    .eco-node .eco-btn {
+      transform: scale(calc(1 + var(--deg) * 0.14));
+    }
+
+    .eco-node[data-state="off"] .eco-btn {
+      color: var(--color-ink-soft);
+    }
+    .eco-node[data-state="near"] .eco-btn {
+      border-color: var(--color-line-strong);
+      color: var(--color-ink);
+    }
+    .eco-node[data-state="on"] .eco-btn {
+      border-color: var(--color-accent);
+      color: var(--color-ink);
+      transform: scale(calc(1.06 + var(--deg) * 0.14));
+    }
+
+    .eco-label {
+      font-size: var(--text-body);
+      font-family: var(--font-text);
+      letter-spacing: 0;
+    }
+
+    /* In ring layout the per-node detail is carried by the side panel instead,
+     * so the inline copy is hidden VISUALLY but stays in the DOM for a screen
+     * reader and for a crawler. `display: none` would have removed it. */
+    .eco-items {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .eco-detail {
+      display: grid;
+      gap: var(--spacing-s4);
+      padding: var(--spacing-s4);
+      border: 1px solid var(--color-line);
+      /* Fixed minimum, so hovering from a two-link node to a six-link one does
+       * not resize the panel and shove the ring sideways. */
+      min-height: 20rem;
+      align-content: start;
+    }
+
+    .eco-detail-head {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-head);
+      line-height: 1.08;
+    }
+
+    .eco-detail-idle {
+      margin: 0;
+      color: var(--color-ink-soft);
+    }
+
+    .eco-links {
+      display: grid;
+      gap: var(--spacing-s3);
+    }
+
+    .eco-link {
+      display: grid;
+      gap: var(--spacing-s1);
+      padding-top: var(--spacing-s3);
+      border-top: 1px solid var(--color-line);
+    }
+
+    .eco-link-to {
+      font-size: var(--text-body);
+    }
+
+    /* The evidence. This line is the whole reason the diagram is not decoration. */
+    .eco-link-why {
+      font-family: var(--font-mono);
+      font-size: var(--text-label);
+      letter-spacing: 0.1em;
+      color: var(--color-ink-soft);
+    }
+  }
+
+  /* ---- the named stack and the architecture row ------------------------ */
+  .skl-stack,
+  .skl-arch {
+    display: grid;
+    gap: var(--spacing-s4);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .skl-stack-label,
+  .skl-arch-label {
+    margin: 0;
+  }
+
+  .skl-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s3) var(--spacing-s5);
+  }
+
+  .skl-term {
+    font-size: var(--text-lead);
+  }
+
+  .skl-arch-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s4) var(--spacing-s5);
+  }
+
+  .skl-arch-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-s2);
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: 1;
+  }
+
+  .skl-arch-num {
+    color: var(--color-accent);
+  }
+
+  /* ---- work: the rail's own frame -------------------------------------- */
+  .work {
+    padding-inline: var(--spacing-gut);
+  }
+
+  /* ---- a project case study -------------------------------------------- */
+  /* Spread, not card: no border box, no radius, no shadow. The only rule is the
+   * one on the left that separates this panel from the one before it, and in the
+   * vertical layout even that becomes a top rule instead. */
+  .prj {
+    position: relative;
+  }
+
+  .prj-in {
+    display: grid;
+    gap: var(--spacing-s4);
+    align-content: start;
+    max-width: 68ch;
+  }
+
+  .prj-head {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .prj-index {
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  .prj-name {
+    display: grid;
+    gap: var(--spacing-s1);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
+    letter-spacing: -0.02em;
+  }
+
+  /* VQT is the only project with an expanded name, so it gets a second line
+   * rather than a parenthesis inside the display type. */
+  .prj-full {
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    letter-spacing: 0.02em;
+    color: var(--color-ink-soft);
+  }
+
+  .prj-type {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+
+  /* Status uses the shared .status / .pip rules from the components block above;
+   * these two only place it. Redeclaring the pip here would give the page two
+   * definitions of the same mark and they would drift. */
+  .prj-status {
+    margin-top: var(--spacing-s1);
+  }
+
+  .prj-summary {
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+  }
+
+  /* Problem beside approach on anything but a phone. Two columns because they are
+   * a pair of claims to be read against each other, not a sequence. */
+  .prj-case {
+    display: grid;
+    gap: var(--spacing-s4);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .prj-block {
+    display: grid;
+    gap: var(--spacing-s2);
+    align-content: start;
+  }
+
+  .prj-block-label {
+    margin: 0;
+  }
+
+  .prj-block-text {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .prj-meta {
+    display: grid;
+    gap: var(--spacing-s3);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .prj-meta-row {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .prj-meta-row dt {
+    margin: 0;
+  }
+
+  .prj-meta-row dd {
+    margin: 0;
+  }
+
+  .prj-terms,
+  .prj-goal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s2) var(--spacing-s3);
+  }
+
+  .prj-term {
+    padding: 0.24rem 0.56rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+    border: 1px solid var(--color-line);
+  }
+
+  .prj-goals {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  /* Goals are intentions, so they read as plain text with a tick rather than as
+   * bordered terms. The visual difference is the honesty: a boxed term looks like
+   * a shipped capability. */
+  .prj-goal {
+    position: relative;
+    padding-left: var(--spacing-s3);
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+  .prj-goal::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.3rem;
+    height: 1px;
+    background: var(--color-line-strong);
+  }
+
+  .prj-note {
+    margin: 0;
+    max-width: 52ch;
+    font-family: var(--font-display);
+    font-size: var(--text-sub);
+    line-height: 1.34;
+    color: var(--color-ink-soft);
+  }
+
+  .prj-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s4);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  /* No fabricated URL and no disabled button pretending to be a link. A sentence,
+   * in the mono face so it reads as a status rather than as prose. */
+  .prj-pending {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 640px) {
+    .prj-case {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-s5);
+    }
+
+    .prj-meta-row {
+      grid-template-columns: 8rem 1fr;
+      align-items: baseline;
+      gap: var(--spacing-s4);
+    }
+  }
+
+  /* ---- panel geometry in each rail mode -------------------------------- */
+  /* Vertical: a column of spreads separated by a rule. */
+  .rail[data-mode="v"] .prj {
+    padding-top: var(--spacing-s5);
+    border-top: 1px solid var(--color-line);
+  }
+
+  /* Horizontal: fixed-width panels with a left rule, and the hero panel wider
+   * than the rest — the one place on the page where dominance is expressed as
+   * literal size. */
+  .rail[data-mode="h"] .prj {
+    width: min(46rem, 78vw);
+    padding: var(--spacing-s5) var(--spacing-s6) var(--spacing-s5) 0;
+    margin-right: var(--spacing-s6);
+    border-left: 1px solid var(--color-line);
+    padding-left: var(--spacing-s5);
+    /* The inactive panels sit back. Not hidden: readable, just not the one being
+     * read. Opacity only, so there is nothing to lay out per frame. */
+    opacity: 0.42;
+    transition: opacity 420ms var(--ease-out-quart);
+  }
+
+  .rail[data-mode="h"] .prj[data-active="1"] {
+    opacity: 1;
+  }
+
+  .rail[data-mode="h"] .prj[data-hero="1"] {
+    width: min(58rem, 86vw);
+  }
+
+  .rail[data-mode="h"] .prj-in {
+    max-width: none;
+  }
+
+  /* ---- POGO, the chapter ----------------------------------------------- */
+  .pogo {
+    display: grid;
+    align-content: center;
+    min-height: 100svh;
+    padding: var(--spacing-s7) var(--spacing-gut);
+  }
+
+  .pogo-in {
+    display: grid;
+    gap: var(--spacing-s5);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  .pogo-head {
+    display: grid;
+    gap: var(--spacing-s2);
+    justify-items: start;
+  }
+
+  .pogo-eyebrow {
+    margin: 0;
+  }
+
+  /* The largest type on the page after the name in the hero. Four characters, so
+   * it can afford to be this size at every width. */
+  .pogo-name {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    letter-spacing: -0.04em;
+  }
+
+  .pogo-type {
+    margin: 0;
+    font-size: var(--text-sub);
+    color: var(--color-ink-soft);
+  }
+
+  .pogo-status {
+    margin-top: var(--spacing-s1);
+  }
+
+  .pogo-line {
+    font-size: var(--text-sub);
+    line-height: 1.34;
+    max-width: 40ch;
+  }
+
+  .pogo-stack {
+    display: grid;
+    gap: var(--spacing-s4);
+  }
+
+  .pogo-tier {
+    display: grid;
+    gap: var(--spacing-s3);
+    padding-top: var(--spacing-s3);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .pogo-tier-label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s2) var(--spacing-s3);
+    margin: 0;
+  }
+
+  .pogo-tier-name {
+    color: var(--color-accent);
+  }
+
+  .pogo-tier-note {
+    color: var(--color-ink-soft);
+  }
+
+  .pogo-layers {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  /* Each layer's own slice of the scroll. --from spaces the six layers across the
+   * middle of the scene, and the multiplier makes each one resolve over about a
+   * fifth of it, so they overlap slightly and the stack builds as one movement
+   * rather than as six separate arrivals.
+   *   from = 0.16 + i * 0.085
+   *   t    = clamp((p - from) * 5)
+   * Written as arithmetic on --p, so scrolling back up disassembles it exactly. */
+  .pogo-layer {
+    --from: calc(0.16 + var(--i) * 0.085);
+    --t: clamp(0, calc((var(--p) - var(--from)) * 5), 1);
+    display: grid;
+    gap: var(--spacing-s1);
+    padding-left: var(--spacing-s4);
+    position: relative;
+    opacity: calc(0.12 + var(--t) * 0.88);
+    transform: translate3d(calc((1 - var(--t)) * -0.75rem), 0, 0);
+  }
+
+  /* The connector. Grows from nothing to the full gutter as the layer resolves,
+   * which is the only thing on the page that animates a width — and it is a
+   * transform on a 1px rule, not a width. */
+  .pogo-layer::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: var(--spacing-s3);
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(var(--t));
+    transform-origin: 0 50%;
+  }
+
+  .pogo-layer-label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .pogo-layer-blurb {
+    margin: 0;
+    max-width: 52ch;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .pogo-note {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+    color: var(--color-ink-soft);
+  }
+
+  /* Wide: the head sits beside the stack, so the diagram gets the height it needs
+   * inside a pinned viewport instead of being squeezed under a display heading. */
+  @media (min-width: 1024px) {
+    .pogo-in {
+      grid-template-columns: minmax(18rem, 26rem) 1fr;
+      gap: var(--spacing-s6);
+      align-items: start;
+    }
+
+    .pogo-head,
+    .pogo-line {
+      grid-column: 1;
+    }
+
+    .pogo-stack {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+    }
+
+    .pogo-note {
+      grid-column: 1;
+    }
+
+    .pogo-layer {
+      grid-template-columns: 12rem 1fr;
+      align-items: baseline;
+      gap: var(--spacing-s4);
+    }
+  }
+
+  /* ---- shared shape for the back-half sections -------------------------- */
+  /* Four sections in a row would flatten if each one invented its own frame, and
+   * would flatten just as badly if they all shared one. So the OUTER rhythm is
+   * shared here and every inner layout differs: Journey is a rail, Building is two
+   * columns, Education is a marked timeline, Services is display type. */
+  .jrn,
+  .bld,
+  .edu,
+  .srv,
+  .prf {
+    padding: var(--spacing-s8) var(--spacing-gut);
+  }
+
+  .jrn-in,
+  .bld-in,
+  .edu-in,
+  .srv-in,
+  .prf-in {
+    display: grid;
+    gap: var(--spacing-s6);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  .jrn-head,
+  .bld-head,
+  .edu-head,
+  .srv-head {
+    display: grid;
+    gap: var(--spacing-s3);
+    max-width: 46ch;
+  }
+
+  .jrn-title,
+  .bld-title,
+  .edu-title,
+  .srv-title {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
+    letter-spacing: -0.015em;
+  }
+
+  .jrn-direction,
+  .bld-disclaimer,
+  .srv-framing {
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  /* ---- journey ---------------------------------------------------------- */
+  .jrn-list {
+    display: grid;
+    gap: 0;
+  }
+
+  /* Each stage is a row with the marker in a fixed left gutter, and the gutter is
+   * where the connecting rule lives. One rule per stage rather than one long line
+   * behind everything, so nothing has to be measured. */
+  .jrn-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    grid-template-areas:
+      "dot label"
+      ".   line"
+      ".   state";
+    gap: var(--spacing-s1) var(--spacing-s3);
+    padding-block: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  /* The vertical connector, drawn in the marker gutter between consecutive
+   * stages. Not on the last one, because a line leading nowhere reads as a
+   * missing sixth stage. */
+  .jrn-stage:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 0.4375rem;
+    top: calc(var(--spacing-s4) + 1rem);
+    bottom: 0;
+    width: 1px;
+    background: var(--color-line);
+  }
+
+  .jrn-dot {
+    grid-area: dot;
+    align-self: center;
+    justify-self: start;
+    width: 0.5625rem;
+    height: 0.5625rem;
+    margin-top: 0.34em;
+    border-radius: 50%;
+    border: 1px solid var(--color-accent);
+  }
+
+  /* Form, again, rather than a second colour: true today is filled, intended is a
+   * dashed ring. The same vocabulary the project pips use, so a reader who
+   * learned it at the projects already knows it here. */
+  .jrn-stage[data-state="now"] .jrn-dot {
+    background: var(--color-accent);
+  }
+  .jrn-stage[data-state="ahead"] .jrn-dot {
+    border-style: dashed;
+    border-color: var(--color-line-strong);
+  }
+
+  .jrn-stage-label {
+    grid-area: label;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .jrn-stage[data-state="ahead"] .jrn-stage-label {
+    color: var(--color-ink-soft);
+  }
+
+  .jrn-stage-line {
+    grid-area: line;
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .jrn-stage-state {
+    grid-area: state;
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+
+  .jrn-dream {
+    display: grid;
+    gap: var(--spacing-s2);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .jrn-dream-role {
+    display: grid;
+    gap: var(--spacing-s2);
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .jrn-dream-label {
+    color: var(--color-accent);
+  }
+
+  /* The qualifier, at body size and immediately under the word. Not smaller than
+   * the surrounding prose, because shrinking a caveat is how a caveat gets
+   * ignored. */
+  .jrn-dream-framing {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 768px) {
+    .jrn-stage {
+      grid-template-columns: 1.5rem minmax(9rem, 12rem) 1fr auto;
+      grid-template-areas: "dot label line state";
+      align-items: baseline;
+      gap: var(--spacing-s4);
+    }
+  }
+
+  /* ---- building --------------------------------------------------------- */
+  .bld-list {
+    display: grid;
+  }
+
+  .bld-entry {
+    display: grid;
+    gap: var(--spacing-s3);
+    padding-block: var(--spacing-s5);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .bld-entry-head {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .bld-entry-num {
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  .bld-entry-label {
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .bld-entry-line {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--color-ink);
+  }
+
+  .bld-entry-detail {
+    margin: 0;
+    max-width: 58ch;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 900px) {
+    .bld-entry {
+      grid-template-columns: minmax(16rem, 24rem) 1fr;
+      gap: var(--spacing-s6);
+      align-items: start;
+    }
+  }
+
+  /* ---- education -------------------------------------------------------- */
+  .edu-list {
+    display: grid;
+  }
+
+  .edu-entry {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .edu-entry-in {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: var(--spacing-s4);
+    padding-block: var(--spacing-s5);
+  }
+
+  .edu-mark {
+    display: grid;
+    justify-content: start;
+  }
+
+  .edu-dot {
+    width: 0.5625rem;
+    height: 0.5625rem;
+    margin-top: 0.5em;
+    border-radius: 50%;
+    border: 1px solid var(--color-accent);
+  }
+
+  .edu-entry[data-kind="current"] .edu-dot {
+    background: var(--color-accent);
+  }
+  /* Intended, and drawn as intended. */
+  .edu-entry[data-kind="intended"] .edu-dot {
+    border-style: dashed;
+    border-color: var(--color-line-strong);
+  }
+
+  .edu-body {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  .edu-kind {
+    margin: 0;
+    color: var(--color-accent);
+  }
+  .edu-entry[data-kind="intended"] .edu-kind {
+    color: var(--color-ink-soft);
+  }
+
+  .edu-level {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--spacing-s3);
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .edu-stream {
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    letter-spacing: 0.02em;
+    color: var(--color-ink-soft);
+  }
+
+  .edu-institution {
+    margin: 0;
+    font-size: var(--text-lead);
+  }
+
+  .edu-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--spacing-s3) var(--spacing-s4);
+    margin: 0;
+  }
+
+  .edu-fact {
+    display: grid;
+    gap: var(--spacing-s1);
+  }
+
+  .edu-fact dt,
+  .edu-fact dd {
+    margin: 0;
+  }
+
+  .edu-fact dd {
+    font-size: var(--text-body);
+  }
+
+  .edu-detail {
+    margin: 0;
+    max-width: 60ch;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .edu-fields {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .edu-fields-label {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+
+  .edu-field-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s2) var(--spacing-s3);
+  }
+
+  /* Dashed borders, because these four are candidates and the border says so
+   * without a word of extra copy. */
+  .edu-field {
+    padding: 0.24rem 0.56rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+    border: 1px dashed var(--color-line);
+  }
+
+  /* ---- services --------------------------------------------------------- */
+  .srv-list {
+    display: grid;
+  }
+
+  /* Five rows of display type. The number sits in a fixed gutter so the labels
+   * form a hard left edge, which is what makes a list this large read as a set
+   * rather than as five headings. */
+  .srv-item {
+    display: grid;
+    grid-template-columns: 3ch 1fr;
+    grid-template-areas:
+      "num label"
+      ".   line";
+    align-items: baseline;
+    gap: var(--spacing-s2) var(--spacing-s4);
+    padding-block: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+    transition: border-color 320ms var(--ease-out-quart);
+  }
+
+  .srv-item:hover {
+    border-color: var(--color-line-strong);
+  }
+
+  .srv-num {
+    grid-area: num;
+    color: var(--color-accent);
+  }
+
+  .srv-label {
+    grid-area: label;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    /* Nudges right on hover. Two pixels, transform only, and it is the entire
+     * interaction: enough to feel alive, not enough to be a gimmick. */
+    transform: translate3d(0, 0, 0);
+    transition: transform 380ms var(--ease-out-quart);
+  }
+
+  .srv-item:hover .srv-label {
+    transform: translate3d(0.375rem, 0, 0);
+  }
+
+  .srv-line {
+    grid-area: line;
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 900px) {
+    .srv-item {
+      grid-template-columns: 3ch minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-template-areas: "num label line";
+      gap: var(--spacing-s5);
+    }
+  }
+
+  /* ---- proof ------------------------------------------------------------ */
+  .prf-copy {
+    display: grid;
+    gap: var(--spacing-s3);
+    justify-items: start;
+    max-width: 44ch;
+  }
+
+  .prf-title {
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    line-height: var(--text-head--line-height);
+  }
+
+  .prf-line {
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: var(--color-ink-soft);
+  }
+
+  .prf-cats {
+    display: grid;
+    gap: var(--spacing-s3);
+    align-content: start;
+  }
+
+  .prf-cats-label {
+    margin: 0;
+  }
+
+  .prf-cat-list {
+    display: grid;
+  }
+
+  .prf-cat {
+    padding-block: var(--spacing-s2);
+    font-size: var(--text-body);
+    color: var(--color-ink-soft);
+    border-top: 1px solid var(--color-line);
+  }
+
+  @media (min-width: 900px) {
+    .prf-in {
+      grid-template-columns: 1fr minmax(14rem, 20rem);
+      gap: var(--spacing-s6);
+      align-items: start;
+    }
+  }
+
+  /* ---- contact: the close ---------------------------------------------- */
+  /* A whole screen, not a footer. The last thing the reader sees should feel
+   * decided, and a 12px row of links under a horizontal rule never does. */
+  .cnt {
+    display: grid;
+    align-content: center;
+    min-height: 100svh;
+    padding: var(--spacing-s8) var(--spacing-gut) var(--spacing-s6);
+  }
+
+  .cnt-in {
+    display: grid;
+    gap: var(--spacing-s5);
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+
+  .cnt-head {
+    display: grid;
+    gap: var(--spacing-s3);
+  }
+
+  .cnt-title {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    letter-spacing: -0.035em;
+  }
+
+  .cnt-line {
+    max-width: 44ch;
+    font-size: var(--text-sub);
+    line-height: 1.36;
+  }
+
+  .cnt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s4);
+  }
+
+  .cnt-channels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--spacing-s4);
+    margin: 0;
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .cnt-channel {
+    display: grid;
+    gap: var(--spacing-s2);
+  }
+
+  .cnt-channel dt,
+  .cnt-channel dd {
+    margin: 0;
+  }
+
+  .cnt-channel dd {
+    font-size: var(--text-body);
+    /* A phone number and an email must not wrap mid-token: a broken address is
+     * worse than a scrollbar. */
+    overflow-wrap: anywhere;
+  }
+
+  /* The <nav> wrapper, not the list. It exists so the five profiles are a labelled
+   * landmark rather than five loose links at the bottom of a footer, and it owns
+   * the hairline that separates them from the channels above. */
+  .cnt-social {
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .cnt-social-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s3) var(--spacing-s5);
+  }
+
+  .cnt-social-item a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--spacing-s2);
+    font-size: var(--text-body);
+  }
+
+  .cnt-social-handle {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+  }
+
+  .cnt-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-s3);
+    padding-top: var(--spacing-s4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  /* The monogram in type, beside the one the canvas has just drawn out of a few
+   * hundred points. The canvas is aria-hidden, so this is the version that
+   * survives with images off, with JavaScript off, and in a screen reader. */
+  .cnt-mark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-head);
+    letter-spacing: 0.04em;
+  }
+
+  .cnt-foot-line {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+    color: var(--color-ink-soft);
+  }
+
+  /* ---- skip link ------------------------------------------------------- */
+  .skip {
+    position: fixed;
+    top: var(--spacing-s3);
+    left: var(--spacing-s3);
+    z-index: 200;
+    padding: 0.7rem 1rem;
+    background: var(--color-ink);
+    color: var(--color-ground);
+    font-size: var(--text-label);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transform: translateY(-160%);
+    transition: transform 240ms var(--ease-out-quart);
+  }
+  .skip:focus {
+    transform: translateY(0);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* ===========================================================================
+ * Reduced motion.
+ *
+ * Not "slightly less motion". Every scroll-driven property is pinned to its
+ * finished value, the signature core stops animating and draws one static
+ * frame, and the decryption resolves outright. Nothing becomes unreachable and
+ * no content is lost, which is the actual requirement.
+ * ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  :root {
+    --p: 1;
+    --e: 1;
+  }
+
+  .reveal {
+    --t: 1;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .par {
+    transform: none;
+  }
+
+  /* The magnetic wrapper never gets its listeners under this preference, so --mx
+   * and --my stay at 0 anyway. This is belt and braces for the reader who turns
+   * the preference on with the page already open. */
+  .mag,
+  .mag-in {
+    transform: none;
+  }
+
+  [data-split] .c,
+  [data-split] .ln {
+    --t: 1;
+  }
+
+  [data-split="lines"] .ln {
+    clip-path: none;
+  }
+
+  .cipher .ch {
+    color: var(--color-ink);
+    opacity: 1;
+  }
+
+  /* The rail never becomes horizontal here — HorizontalScroll checks the same
+   * query before it builds the pin — so this only guards against a mode set
+   * before the preference changed mid-session. */
+  .rail[data-mode="h"] {
+    height: auto;
+    overflow: visible;
+  }
+
+  /* The hero does not disassemble; it just is. */
+  .hero-line,
+  .hero-foot {
+    transform: none;
+  }
+  .hero-foot {
+    opacity: 1;
+  }
+
+  /* The creed reverts to the static row even after hydration has set data-live.
+   * Under --p: 1 the window function resolves to one word and would drop the
+   * other three, so this is a content rule as much as a motion one. */
+  .creed-stack[data-live="1"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0 var(--spacing-s5);
+  }
+  .creed-stack[data-live="1"] .creed-word {
+    grid-area: auto;
+    font-size: var(--text-title);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The interlude's progress hairline reads as full rather than empty. */
+  .creed-rule-fill {
+    transform: none;
+  }
+
+  /* The graph keeps hover and focus, which are reader-driven and not motion, and
+   * loses only the scale change. */
+  .eco-node .eco-btn,
+  .eco-node[data-state="on"] .eco-btn {
+    transform: none;
+  }
+
+  /* POGO's stack is fully assembled. --p is 1 here so every layer's window is
+   * already satisfied; these two rules only remove the slide and the connector's
+   * draw, which would otherwise be a transition waiting to happen. */
+  .pogo-layer,
+  .pogo-layer::before {
+    transform: none;
+  }
+  .pogo-layer {
+    opacity: 1;
+  }
+}

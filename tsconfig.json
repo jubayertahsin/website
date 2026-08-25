@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    // noUncheckedIndexedAccess and noUnusedLocals are deliberately OFF. Both are
+    // good rules, but this was written in an environment where tsc could not run,
+    // so a rule that turns a cosmetic slip into a failed build on your machine is
+    // a rule that costs you rather than me. Turn them on once the build is green
+    // and fix what they find; nothing here depends on them being off.
+    //
+    // This is a comment rather than a "//" property, because tsc reads tsconfig as
+    // JSONC and treats an unrecognised property as the error TS5023, whereas a
+    // real comment is part of the format.
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "tools"]
+}
